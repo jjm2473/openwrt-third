@@ -1,0 +1,12 @@
+[submodule "luci-app-argon-config"]
+	path = luci-app-argon-config
+	url = https://github.com/jjm2473/luci-app-argon-config.git
+[submodule "luci-app-autotimeset"]
+	path = luci-app-autotimeset
+	url = https://github.com/jjm2473/luci-app-autotimeset.git
+[submodule "luci-app-tn-netports"]
+	path = luci-app-tn-netports
+	url = https://github.com/jjm2473/luci-app-tn-netports.git
+[submodule "luci-theme-argon"]
+	path = luci-theme-argon
+	url = https://github.com/jjm2473/luci-theme-argon.git
