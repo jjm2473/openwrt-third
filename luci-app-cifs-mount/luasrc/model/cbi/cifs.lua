@@ -21,6 +21,7 @@ server.size = 12
 server.rmempty = false
 
 name = s:option(Value, "name", translate("Share Folder"))
+name.datatype = "minlength(1)"
 name.rmempty = false
 name.size = 8
 
@@ -28,6 +29,7 @@ pth = s:option(Value, "natpath", translate("Mount Path"))
 if nixio.fs.access("/etc/config/fstab") then
         pth.titleref = luci.dispatcher.build_url("admin", "system", "fstab")
 end
+pth.datatype = "minlength(2)"
 pth.rmempty = false
 pth.size = 10
 
@@ -67,6 +69,7 @@ s.addremove = true
 s.template = "cbi/tblsection"
 
 server = s:option(Value, "url", translate("URL"))
+server.datatype = "minlength(1)"
 server.size = 16
 server.rmempty = false
 
@@ -74,6 +77,7 @@ pth = s:option(Value, "mountpoint", translate("Mount Path"))
 if nixio.fs.access("/etc/config/fstab") then
         pth.titleref = luci.dispatcher.build_url("admin", "system", "fstab")
 end
+pth.datatype = "minlength(2)"
 pth.rmempty = false
 pth.size = 10
 
