@@ -11,7 +11,7 @@ LUCI_DEPENDS:=+mount-utils +kmod-fs-cifs +kmod-nls-utf8 +davfs2
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-cifs-mount
 PKG_VERSION:=1
-PKG_RELEASE:=11
+PKG_RELEASE:=12
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
