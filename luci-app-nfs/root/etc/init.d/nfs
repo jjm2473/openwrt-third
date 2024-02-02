@@ -15,6 +15,7 @@ nfs_share() {
     if [ "$enabled" = 1 ]; then
         grep -qs $path /etc/exports
         if [ $? -ne 0 ]; then
+            [ -n "$options" ] || options="rw,sync,root_squash,all_squash,insecure,no_subtree_check"
             echo -e "$path\t$clients($options)" >>/etc/exports
             exportfs -r
         fi
@@ -31,22 +32,29 @@ nfs_share_stop() {
     exportfs -au &>/dev/null
 }
 
+SLEPT=5
+
 nfs_mount() {
 
-    local enabled target source options delay
+    local enabled target source options delay delay0
     config_get_bool enabled "$1" enabled 0
     for opt in target source options delay
     do
         config_get "$opt" "$1" "$opt"
     done
 
+    [ -n "$delay" ] || delay=5
+
     if [ "$enabled" = 1 ]; then
-        if [ "$delay" -a $delay -gt 0 ]; then
-            logger "NetMount: Sleep $delay seconds before mount"
-            sleep $delay
+        if [ $delay -gt $SLEPT ]; then
+            delay0=$(($delay - $SLEPT))
+            logger "NetMount: Sleep $delay0 seconds before mount"
+            sleep $delay0
+            SLEPT=$delay
         fi
         grep -qs $target /proc/mounts
         if [ $? -ne 0 ]; then
+            [ -n "$options" ] || options="rw,nolock"
             mkdir -p $target
             logger "NetMount: Mounting $source in $target"
             mount -t nfs -o $options $source $target
@@ -54,9 +62,13 @@ nfs_mount() {
     elif [ "$enabled" = 0 ]; then
         if grep -qs $target /proc/mounts; then
             umount -fr $target
-            sleep $delay
         fi
     fi
+}
+
+boot() {
+    SLEPT=0
+    start
 }
 
 start() {

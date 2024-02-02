@@ -17,11 +17,14 @@ s.addremove = true
 s.template = "cbi/tblsection"
 
 server = s:option(Value, "server", translate("Server IP"))
+server.datatype = "host"
+server.placeholder = "192.168.50.1"
 server.size = 12
 server.rmempty = false
 
 name = s:option(Value, "name", translate("Share Folder"))
 name.datatype = "minlength(1)"
+name.placeholder = "Share"
 name.rmempty = false
 name.size = 8
 
@@ -30,6 +33,7 @@ if nixio.fs.access("/etc/config/fstab") then
         pth.titleref = luci.dispatcher.build_url("admin", "system", "fstab")
 end
 pth.datatype = "minlength(2)"
+pth.placeholder = "/mnt/samba"
 pth.rmempty = false
 pth.size = 10
 
@@ -70,6 +74,7 @@ s.template = "cbi/tblsection"
 
 server = s:option(Value, "url", translate("URL"))
 server.datatype = "minlength(1)"
+server.placeholder = "http://"
 server.size = 16
 server.rmempty = false
 
@@ -78,6 +83,7 @@ if nixio.fs.access("/etc/config/fstab") then
         pth.titleref = luci.dispatcher.build_url("admin", "system", "fstab")
 end
 pth.datatype = "minlength(2)"
+pth.placeholder = "/mnt/webdav"
 pth.rmempty = false
 pth.size = 10
 

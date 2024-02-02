@@ -37,7 +37,7 @@ mount_natshare() {
 	config_get guest $1 guest
 	config_get users $1 users
 	config_get pwd $1 pwd
-	config_get agm $1 agm
+	config_get agm $1 agm "ro"
 	config_get iocharset $1 iocharset
 	config_get smbver $1 smbver
 	
