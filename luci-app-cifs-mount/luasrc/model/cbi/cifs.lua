@@ -8,8 +8,8 @@ s.anonymous = true
 switch = s:option(Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
-workgroup = s:option(Value, "workgroup", translate("Workgroup"))
-workgroup.default = "WORKGROUP"
+delay = s:option(Value, "delay", translate("Delay"), translate("Boot delay (in seconds), skip if 0 or empty"))
+delay.datatype = "uinteger"
 
 s = m:section(TypedSection, "natshare", translate("Mount CIFS/SMB"))
 s.anonymous = true

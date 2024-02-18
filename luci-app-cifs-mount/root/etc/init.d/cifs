@@ -2,22 +2,15 @@
 
 START=97
 
-ENABLED=0
-WORKGROUPD=0
-IOCHARSET=0
-GUEST=""
-USERS=""
-AGM=""
-
 cifs_header() {
 	local enabled
-	local workgroup 
+	local delay
 
 	config_get enabled $1 enabled
-	config_get workgroup $1 workgroup
+	config_get delay $1 delay 0
 
 	ENABLED=$enabled
-	WORKGROUPD=$workgroup
+	DELAY=$delay
 }
 
 mount_natshare() {
@@ -75,11 +68,22 @@ mount_davfs() {
 	{ echo "$username"; echo "$password"; } | /usr/bin/mount -t davfs -o conf=/etc/davfs2/script.conf$arguments $url $mountpoint
 }
 
+boot() {
+	BOOT=1
+	start
+}
+
 start() {
+	ENABLED=0
+	DELAY=0
+
 	config_load cifs
 	config_foreach cifs_header cifs
 
 	if [ "$ENABLED" == 1 ]; then
+		if [ "$BOOT" == 1 -a "$DELAY" -gt 0 ]; then
+			sleep "$DELAY"
+		fi
 		config_foreach mount_natshare natshare
 		#echo "Cifs Mount succeed."
 		config_foreach mount_davfs davfs

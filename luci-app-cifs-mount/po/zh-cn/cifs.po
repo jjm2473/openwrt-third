@@ -4,6 +4,12 @@ msgstr "挂载网络共享"
 msgid "Mount NetShare for OpenWrt"
 msgstr "可以将 SMB/CIFS,WebDAV 的共享文件夹挂载到本地（修改挂载后，需要重启使用这些文件夹的客户端）"
 
+msgid "Delay"
+msgstr "延迟"
+
+msgid "Boot delay (in seconds), skip if 0 or empty"
+msgstr "开机延迟(秒)，0或者空则跳过"
+
 msgid "Mount CIFS/SMB"
 msgstr "挂载 CIFS/SMB （Windows 网络共享）"
 
