@@ -11,6 +11,10 @@ LUCI_PKGARCH:=all
 PKG_VERSION:=1.2.0-1
 PKG_RELEASE:=
 
+define Package/luci-app-nfs/conffiles
+/etc/config/nfs
+endef
+
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature

@@ -11,6 +11,10 @@ LUCI_DEPENDS:=+vlmcsd
 PKG_VERSION:=1.0
 PKG_RELEASE:=5
 
+define Package/luci-app-vlmcsd/conffiles
+/etc/config/vlmcsd
+endef
+
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
