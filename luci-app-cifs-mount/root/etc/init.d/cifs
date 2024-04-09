@@ -23,7 +23,10 @@ mount_natshare() {
 	local agm
 	local iocharset
 	local smbver
+	local enabled
 
+	config_get enabled $1 enabled 1
+	[ "$enabled" = 1 ] || return 0
 	config_get server $1 server
 	config_get name $1 name
 	config_get natpath $1 natpath
@@ -50,22 +53,34 @@ mount_davfs() {
 	local password
 	local mountpoint
 	local arguments
+	local engine
+	local enabled
 
+	config_get enabled $1 enabled 1
+	[ "$enabled" = 1 ] || return 0
 	config_get url $1 url
 	config_get username $1 username
 	config_get password $1 password
 	config_get mountpoint $1 mountpoint
 	config_get arguments $1 arguments
+	config_get engine $1 engine 'davfs2'
 
 	if [ -z "$url" -o -z "$mountpoint" ]; then
 		logger -t davfs "url or mountpoint is empty"
 		return 1
 	fi
-	mkdir -p $mountpoint && chmod 777 $mountpoint
+	mkdir -p "$mountpoint" && chmod 777 "$mountpoint"
 
 	[ -n "$arguments" ] && arguments=",$arguments"
 
-	{ echo "$username"; echo "$password"; } | /usr/bin/mount -t davfs -o conf=/etc/davfs2/script.conf$arguments $url $mountpoint
+	if [ "$engine" = "webdavfs" ]; then
+		arguments="allow_other$arguments"
+		[ -n "$password" ] && arguments="password=$password,$arguments"
+		[ -n "$username" ] && arguments="username=$username,$arguments"
+		/usr/bin/mount -t webdavfs -o "$arguments" "$url" "$mountpoint"
+		return $?
+	fi
+	{ echo "$username"; echo "$password"; } | /usr/bin/mount -t davfs -o "conf=/etc/davfs2/script.conf$arguments" "$url" "$mountpoint"
 }
 
 boot() {
