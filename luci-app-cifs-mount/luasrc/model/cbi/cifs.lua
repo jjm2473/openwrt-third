@@ -1,5 +1,8 @@
 local fs = require "nixio.fs"
 local m,s,o
+local util = require "luci.util"
+local rclone_version = util.trim(util.exec("/etc/init.d/cifs rclone_installed"))
+local rclone_installed = (string.len(rclone_version) > 0)
 
 m = Map("cifs", translate("Mount NetShare"), translate("Mount NetShare for OpenWrt"))
 
@@ -73,9 +76,10 @@ pwd.password = true
 pwd.size = 8
 
 s = m:section(TypedSection, "davfs", translate("Mount WebDAV"), translate("Regarding the choice of engine: <br>" ..
-        "<b>davfs2</b> supports reading and writing, but its random reading and writing performance is very poor. Reading and writing any position in the file will cause the entire file to be downloaded; <br>" ..
-        "<a href=\"https://github.com/miquels/webdavfs\" target=\"_blank\"><b>webdavfs</b></a> has good reading performance, but whether it can be written depends on the WebDAV server. Please refer to the official documentation for details. If the server is compatible, its write performance is also better than davfs2. <br>" ..
-        "If you only need to read, it is recommended to use webdavfs. For example, it will only be used by media services after mounting."))
+        "<b>davfs2</b>: It is installed by default, but its random read and write performance is very poor. Reading and writing files at any location will cause the entire file to be downloaded. <br>" ..
+        "<a href=\"https://rclone.org/\" target=\"_blank\"><b>Rclone</b></a>: Good reading and writing performance, but not installed by default. (No configuration required after installation)<br>" ..
+        "<b>Auto</b>: Use Rclone if it is installed, otherwise fall back to davfs2. (Recommend) <br>") ..
+        translatef("Rclone status: %s <br>", rclone_installed and translatef("%s installed", rclone_version) or translate("Not installed")))
 s.anonymous = true
 s.addremove = true
 s.template = "cbi/tblsection"
@@ -100,9 +104,11 @@ pth.rmempty = false
 pth.size = 10
 
 o = s:option(ListValue, "engine", translate("Engine"))
+o:value("auto", translate("Auto"))
 o:value("davfs2")
-o:value("webdavfs")
-o.default = "davfs2"
+-- o:value("webdavfs")
+o:value("rclone", "Rclone")
+o.default = "auto"
 o.rmempty = false
 
 agm = s:option(Value, "arguments", translate("Arguments"))

@@ -2,6 +2,12 @@
 
 START=97
 
+if type extra_command >/dev/null; then
+	extra_command "rclone_installed" " Get Rclone installation"
+else
+	EXTRA_COMMANDS="${EXTRA_COMMANDS} rclone_installed"
+fi
+
 cifs_header() {
 	local enabled
 	local delay
@@ -55,6 +61,7 @@ mount_davfs() {
 	local arguments
 	local engine
 	local enabled
+	local rclone_mount_args
 
 	config_get enabled $1 enabled 1
 	[ "$enabled" = 1 ] || return 0
@@ -63,13 +70,29 @@ mount_davfs() {
 	config_get password $1 password
 	config_get mountpoint $1 mountpoint
 	config_get arguments $1 arguments
-	config_get engine $1 engine 'davfs2'
+	config_get engine $1 engine 'auto'
 
 	if [ -z "$url" -o -z "$mountpoint" ]; then
 		logger -t davfs "url or mountpoint is empty"
 		return 1
 	fi
 	mkdir -p "$mountpoint" && chmod 777 "$mountpoint"
+
+	if [ -n "$RCLONE_INSTALLED" -a "$engine" = "auto" ]; then
+		engine=rclone
+	fi
+
+	if [ "$engine" = "rclone" ]; then
+		touch /var/etc/cifs-mount/rclone_$1.conf
+		chmod 600 /var/etc/cifs-mount/rclone_$1.conf
+		rclone --config /var/etc/cifs-mount/rclone_$1.conf config create --non-interactive \
+			cifs_rclone_$1 webdav "user=$username" "pass=$password" "url=$url" || return 1
+		rclone_mount_args="--allow-other --default-permissions"
+		echo "$arguments" | grep -Fwq ro && rclone_mount_args="$rclone_mount_args --read-only"
+		rclone --config /var/etc/cifs-mount/rclone_$1.conf mount --daemon $rclone_mount_args \
+			--devname "$url" cifs_rclone_$1: "$mountpoint"
+		return $?
+	fi
 
 	[ -n "$arguments" ] && arguments=",$arguments"
 
@@ -101,6 +124,11 @@ start() {
 		fi
 		config_foreach mount_natshare natshare
 		#echo "Cifs Mount succeed."
+		if rclone_installed >/dev/null; then
+			RCLONE_INSTALLED=1
+		fi
+		rm -rf /var/etc/cifs-mount
+		mkdir -p /var/etc/cifs-mount
 		config_foreach mount_davfs davfs
 	fi
 }
@@ -110,5 +138,11 @@ stop() {
 		#echo "umount -d -l $line"
 		/usr/bin/umount -d -l $line 2>/dev/null
 	done
+	rm -rf /var/etc/cifs-mount
 }
 
+rclone_installed() {
+	local version=$(rclone version 2>/dev/null |head -1 |cut -d' ' -f2)
+	[ -z "$version" ] && return 1
+	echo "$version"
+}
