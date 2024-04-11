@@ -9,11 +9,26 @@ m = Map("cifs", translate("Mount NetShare"), translate("Mount NetShare for OpenW
 s = m:section(TypedSection, "cifs")
 s.anonymous = true
 
-switch = s:option(Flag, "enabled", translate("Enable"))
+s:tab("global", translate("Global Settings"))
+s:tab("davfs", translate("WebDAV"), translate("Advance WebDAV mounting settings"))
+
+switch = s:taboption("global", Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
-delay = s:option(Value, "delay", translate("Delay"), translate("Boot delay (in seconds), skip if 0 or empty"))
+delay = s:taboption("global", Value, "delay", translate("Delay"), translate("Boot delay (in seconds), skip if 0 or empty"))
 delay.datatype = "uinteger"
+
+o = s:taboption("davfs", Value, "cache_dir", translate("Cache Path"), translate("You don't want to use FAT/exFAT"))
+o.placeholder = "/tmp/cache/davfs"
+
+o = s:taboption("davfs", ListValue, "rclone_cache_mode", translate("Rclone Cache Mode"), translate("Refer to '--vfs-cache-mode' in <a href=\"https://rclone.org/commands/rclone_mount/#vfs-file-caching\" target=\"_blank\">official documentation</a>. " ..
+        "If you want to upload a file that exceeds the available memory, you need to at least select \"writes\" here and make sure the cache folder is large enough"))
+o:value("", "off")
+o:value("minimal")
+o:value("writes")
+o:value("full")
+
+o = s:taboption("davfs", Value, "rclone_extras", translate("Rclone Custom"), translate("Extra parameters for \"rclone mount\""))
 
 s = m:section(TypedSection, "natshare", translate("Mount CIFS/SMB"))
 s.anonymous = true

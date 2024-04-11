@@ -11,12 +11,22 @@ fi
 cifs_header() {
 	local enabled
 	local delay
+	local cache_dir
+	local rclone_cache_mode rclone_extras
 
 	config_get enabled $1 enabled
 	config_get delay $1 delay 0
+	config_get cache_dir $1 cache_dir "/tmp/cache/davfs"
+	config_get rclone_cache_mode $1 rclone_cache_mode
+	config_get rclone_extras $1 rclone_extras
 
 	ENABLED=$enabled
 	DELAY=$delay
+	CACHE_DIR="$cache_dir"
+	if [ -n "$rclone_cache_mode" -a "$rclone_cache_mode" != "off" ]; then
+		rclone_extras="--cache-dir \"$cache_dir/rclone\" --vfs-cache-mode $rclone_cache_mode $rclone_extras"
+	fi
+	RCLONE_EXTRAS="$rclone_extras"
 }
 
 mount_natshare() {
@@ -89,8 +99,8 @@ mount_davfs() {
 			cifs_rclone_$1 webdav "user=$username" "pass=$password" "url=$url" || return 1
 		rclone_mount_args="--allow-other --default-permissions"
 		echo "$arguments" | grep -Fwq ro && rclone_mount_args="$rclone_mount_args --read-only"
-		rclone --config /var/etc/cifs-mount/rclone_$1.conf mount --daemon $rclone_mount_args \
-			--devname "$url" cifs_rclone_$1: "$mountpoint"
+		eval "rclone --config /var/etc/cifs-mount/rclone_$1.conf mount --daemon $RCLONE_EXTRAS $rclone_mount_args \
+			--devname \"$url\" cifs_rclone_$1: \"$mountpoint\""
 		return $?
 	fi
 
@@ -103,7 +113,9 @@ mount_davfs() {
 		/usr/bin/mount -t webdavfs -o "$arguments" "$url" "$mountpoint"
 		return $?
 	fi
-	{ echo "$username"; echo "$password"; } | /usr/bin/mount -t davfs -o "conf=/etc/davfs2/script.conf$arguments" "$url" "$mountpoint"
+	{ grep -v '^cache_dir ' /etc/davfs2/script.conf ; echo; echo "cache_dir $CACHE_DIR/davfs2"; } >/var/etc/cifs-mount/davfs2.conf
+	# echo "/usr/bin/mount -t davfs -o \"conf=/var/etc/cifs-mount/davfs2.conf$arguments\" \"$url\" \"$mountpoint\""
+	{ echo "$username"; echo "$password"; } | /usr/bin/mount -t davfs -o "conf=/var/etc/cifs-mount/davfs2.conf$arguments" "$url" "$mountpoint"
 }
 
 boot() {
@@ -114,6 +126,8 @@ boot() {
 start() {
 	ENABLED=0
 	DELAY=0
+	CACHE_DIR=/tmp/cache/davfs
+	RCLONE_EXTRAS=
 
 	config_load cifs
 	config_foreach cifs_header cifs
@@ -129,6 +143,10 @@ start() {
 		fi
 		rm -rf /var/etc/cifs-mount
 		mkdir -p /var/etc/cifs-mount
+		mkdir -p "$CACHE_DIR/davfs2" "$CACHE_DIR/rclone"
+		chmod 0777 "$CACHE_DIR/davfs2"
+		chown nobody:nogroup "$CACHE_DIR/davfs2"
+		chmod 0700 "$CACHE_DIR/rclone"
 		config_foreach mount_davfs davfs
 	fi
 }

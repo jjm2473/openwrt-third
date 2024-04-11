@@ -10,6 +10,31 @@ msgstr "延迟"
 msgid "Boot delay (in seconds), skip if 0 or empty"
 msgstr "开机延迟(秒)，0或者空则跳过"
 
+msgid "Advance WebDAV mounting settings"
+msgstr "高级 WebDAV 挂载设置"
+
+msgid "Cache Path"
+msgstr "缓存路径"
+
+msgid "You don't want to use FAT/exFAT"
+msgstr "你不会想要使用 FAT/exFAT"
+
+msgid "Rclone Cache Mode"
+msgstr "Rclone 缓存模式"
+
+msgid ""
+"Refer to '--vfs-cache-mode' in <a href=\"https://rclone.org/commands/rclone_mount/#vfs-file-caching\" target=\"_blank\">official documentation</a>. "
+"If you want to upload a file that exceeds the available memory, you need to at least select \"writes\" here and make sure the cache folder is large enough"
+msgstr ""
+"参考<a href=\"https://rclone.org/commands/rclone_mount/#vfs-file-caching\" target=\"_blank\">官方文档</a>中的‘--vfs-cache-mode’。"
+"如果你要上传大小超过可用内存的文件，那么这里至少需要选择“writes”，并且确保缓存文件夹空间足够大"
+
+msgid "Rclone Custom"
+msgstr "Rclone 自定义"
+
+msgid "Extra parameters for \"rclone mount\""
+msgstr "“rclone mount”的额外参数"
+
 msgid "Mount CIFS/SMB"
 msgstr "挂载 CIFS/SMB （Windows 网络共享）"
 
