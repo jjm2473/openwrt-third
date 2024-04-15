@@ -52,15 +52,21 @@ mount_natshare() {
 	config_get agm $1 agm "ro"
 	config_get iocharset $1 iocharset
 	config_get smbver $1 smbver
-	
-	mkdir -p $natpath && chmod 777 $natpath
+
+	if [ -z "$server" -o -z "$name" -o -z "$natpath" ]; then
+		logger -t cifs "server/name or mountpoint is empty"
+		return 1
+	fi
+	mountpoint -q "$natpath" && return 0
+	mkdir -p "$natpath" && chmod 777 "$natpath"
+
 	if [ "$smbver" = "nil" ];then
 		smbverarg=""
 	else
 		smbverarg="vers=$smbver,"
 	fi
 	#echo "mount -t cifs -o ${smbverarg}username=$users,password=$pwd,iocharset=$iocharset,$agm //$server/$name $natpath"
-	/usr/bin/mount -t cifs -o ${smbverarg}username=$users,password=$pwd,iocharset=$iocharset,$agm //$server/$name $natpath
+	/usr/bin/mount -t cifs -o "${smbverarg}username=$users,password=$pwd,iocharset=$iocharset,$agm" "//$server/$name" "$natpath"
 }
 
 mount_davfs() {
@@ -86,6 +92,7 @@ mount_davfs() {
 		logger -t davfs "url or mountpoint is empty"
 		return 1
 	fi
+	mountpoint -q "$mountpoint" && return 0
 	mkdir -p "$mountpoint" && chmod 777 "$mountpoint"
 
 	if [ -n "$RCLONE_INSTALLED" -a "$engine" = "auto" ]; then

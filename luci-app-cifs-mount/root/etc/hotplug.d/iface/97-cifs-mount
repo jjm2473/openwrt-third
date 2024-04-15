@@ -1,0 +1,11 @@
+#!/bin/sh
+
+[ "$ACTION" = ifup -o "$ACTION" = ifupdate ] || exit 0
+[ "$ACTION" = ifupdate -a -z "$IFUPDATE_ADDRESSES" -a -z "$IFUPDATE_DATA" ] && exit 0
+
+/etc/init.d/cifs enabled || exit 0
+
+logger -t cifs-mount "Reloading cifs-mount due to $ACTION of $INTERFACE ($DEVICE)"
+
+# use "start" for keeping mounted configs
+/etc/init.d/cifs start
